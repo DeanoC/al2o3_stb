@@ -1,27 +1,30 @@
 #include "al2o3_platform/platform.h"
+#include "al2o3_memory/memory.h"
 
 #define STB_EXTERN AL2O3_EXTERN_C
 
-#define STB_DXT_IMPLEMENTATION
+#define STBI_MALLOC Memory_GlobalAllocator.malloc
+#define STBI_REALLOC Memory_GlobalAllocator.realloc
+#define STBI_FREE Memory_GlobalAllocator.free
+#define STBIR_MALLOC(x,u) ((void)(u),STBI_MALLOC(x))
+#define STBIR_FREE(x,u) ((void)(u),STBI_FREE(x))
+#define STBTT_malloc(x,u)  ((void)(u),STBI_MALLOC(x))
+#define STBTT_free(x,u)    ((void)(u),STBI_FREE(x))
+#define STBIW_MALLOC STBI_MALLOC
+#define STBIW_REALLOC STBI_REALLOC
+#define STBIW_FREE STBI_FREE
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_MALLOC malloc
-#define STBI_REALLOC realloc
-#define STBI_FREE free
-#define STBI_ASSERT ASSERT
+#define STBIW_ASSERT(x) { ASSERT(x); }
+#define STBI_ASSERT(x) { ASSERT(x); }
+#define STBTT_assert(x) ASSERT(x);
 #if defined(__ANDROID__)
 #define STBI_NO_SIMD
 #endif
 
+#define STB_DXT_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STBIW_MALLOC malloc
-#define STBIW_REALLOC realloc
-#define STBIW_FREE free
-#define STBIW_ASSERT ASSERT
-
-
 #define STB_TRUETYPE_IMPLEMENTATION
 
 #ifdef _WIN32

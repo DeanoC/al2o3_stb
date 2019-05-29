@@ -22,42 +22,62 @@
 //      then by rehashing the original H we get 2^12 different probe
 //      sequences for a given initial probe location. (So it's optimal
 //      for 64K tables and its optimality decreases past that.)
-//
-//      ok, so I've added something that generates _two separate_
-//      32-bit hashes simultaneously which should scale better to
-//      very large tables.
 
 
-STB_EXTERN unsigned int stb_hash(char const *str);
-STB_EXTERN unsigned int stb_hashptr(void const *p);
-STB_EXTERN unsigned int stb_hashlen(char const *str, int len);
-STB_EXTERN unsigned int stb_rehash_improved(unsigned int v);
-STB_EXTERN unsigned int stb_hash_fast(void const *p, int len);
-STB_EXTERN unsigned int stb_hash2(char const *str, unsigned int *hash2_ptr);
-STB_EXTERN unsigned int stb_hash_number(unsigned int hash);
+STB_EXTERN uint32_t stb_hash_numberU32(uint32_t number);
+STB_EXTERN uint32_t stb_hash_stringU32(char const *str);
+STB_EXTERN uint32_t stb_hash_ptrU32(void const *p);
+STB_EXTERN uint32_t stb_hash_dataU32(uint8_t const * data, size_t len);
+STB_EXTERN uint32_t stb_rehashU32(uint32_t v);
 
-#define stb_rehash(x)  ((x) + ((x) >> 6) + ((x) >> 19))
+STB_EXTERN uint64_t stb_hash_numberU64(uint64_t number);
+STB_EXTERN uint64_t stb_hash_stringU64(char const *str);
+STB_EXTERN uint64_t stb_hash_ptrU64(void const *p);
+STB_EXTERN uint64_t stb_hash_dataU64(uint8_t const * data, size_t len);
+STB_EXTERN uint64_t stb_rehashU64(uint64_t v);
+
+STB_EXTERN inline size_t stb_hash_numberSizeT(size_t number) {
+	return stb_hash_numberU64(number);
+}
+STB_EXTERN inline size_t stb_hash_stringSizeT(char const *str) {
+	return stb_hash_stringU64(str);
+}
+STB_EXTERN inline size_t stb_hash_ptrSizeT(void const *p) {
+	return stb_hash_ptrU64(p);
+}
+STB_EXTERN inline size_t stb_hash_dataSizeT(uint8_t const * data, size_t len) {
+	return stb_hash_dataU64(data, len);
+}
+STB_EXTERN inline size_t stb_rehashSizeT(uint64_t v) {
+	return stb_rehashU64(v);
+}
+
 
 #ifdef STB_DEFINE
-unsigned int stb_hash(char const *str)
+
+uint32_t stb_hash_numberU32(uint32_t hash)
 {
-   unsigned int hash = 0;
+   hash ^= hash << 3;
+   hash += hash >> 5;
+   hash ^= hash << 4;
+   hash += hash >> 17;
+   hash ^= hash << 25;
+   hash += hash >> 6;
+   return hash;
+}
+
+uint32_t stb_hash_stringU32(char const *str)
+{
+   uint32_t hash = 0;
    while (*str)
       hash = (hash << 7) + (hash >> 25) + *str++;
    return hash + (hash >> 16);
 }
 
-unsigned int stb_hashlen(char const *str, int len)
+uint32_t stb_hash_ptrU32(void const *p)
 {
-   unsigned int hash = 0;
-   while (len-- > 0 && *str)
-      hash = (hash << 7) + (hash >> 25) + *str++;
-   return hash + (hash >> 16);
-}
-
-unsigned int stb_hashptr(void const *p)
-{
-    unsigned int x = (unsigned int)(size_t) p;
+#define stb_rehash(x)  ((x) + ((x) >> 6) + ((x) >> 19))
+    uint32_t x = (uint32_t)(size_t) p;
 
    // typically lacking in low bits and high bits
    x = stb_rehash(x);
@@ -70,33 +90,19 @@ unsigned int stb_hashptr(void const *p)
    x += x >> 15;
    x ^= x << 10;
    return stb_rehash(x);
+#undef stb_rehash
 }
 
-unsigned int stb_rehash_improved(unsigned int v)
+uint32_t stb_rehashU32(uint32_t v)
 {
-   return stb_hashptr((void *)(size_t) v);
+   return stb_hash_ptrU32((void *)(size_t) v);
 }
 
-unsigned int stb_hash2(char const *str, unsigned int *hash2_ptr)
+uint32_t stb_hash_dataU32(uint8_t const *q, size_t len)
 {
-   unsigned int hash1 = 0x3141592c;
-   unsigned int hash2 = 0x77f044ed;
-   while (*str) {
-      hash1 = (hash1 << 7) + (hash1 >> 25) + *str;
-      hash2 = (hash2 << 11) + (hash2 >> 21) + *str;
-      ++str;
-   }
-   *hash2_ptr = hash2 + (hash1 >> 16);
-   return       hash1 + (hash2 >> 16);
-}
-
 // Paul Hsieh hash
 #define stb__get16(p) ((p)[0] | ((p)[1] << 8))
-
-unsigned int stb_hash_fast(void const *p, int len)
-{
-   unsigned char *q = (unsigned char *) p;
-   unsigned int hash = len;
+   uint32_t hash = (uint32_t)len;
 
    if (len <= 0 || q == NULL) return 0;
 
@@ -127,6 +133,7 @@ unsigned int stb_hash_fast(void const *p, int len)
               break;
       case 0: break;
    }
+#undef stb__get16
 
    /* Force "avalanching" of final 127 bits */
    hash ^= hash << 3;
@@ -139,7 +146,7 @@ unsigned int stb_hash_fast(void const *p, int len)
    return hash;
 }
 
-unsigned int stb_hash_number(unsigned int hash)
+uint64_t stb_hash_numberU64(uint64_t hash)
 {
    hash ^= hash << 3;
    hash += hash >> 5;
@@ -147,8 +154,103 @@ unsigned int stb_hash_number(unsigned int hash)
    hash += hash >> 17;
    hash ^= hash << 25;
    hash += hash >> 6;
+
+   hash ^= hash << 35;
+   hash += hash >> 37;
+   hash ^= hash << 36;
+   hash += hash >> 49;
+   hash ^= hash << 57;
+   hash += hash >> 38;
    return hash;
 }
+
+uint64_t stb_hash_stringU64(char const *str)
+{
+   uint64_t hash = 0;
+   while (*str)
+      hash = (hash << 7) + (hash >> 25) + (hash << 39) + (hash >> 49) + *str++;
+   return hash + (hash >> 16) + (hash >> 48);
+}
+
+uint64_t stb_hash_ptrU64(void const *p)
+{
+#define stb_rehash(x)  ((x) + ((x) >> 6) + ((x) >> 19) + ((x) >> 38) + ((x) >> 51))
+    uint64_t x = (uint64_t)(size_t) p;
+
+   // typically lacking in low bits and high bits
+   x = stb_rehash(x);
+   x += x << 16;
+   x += x << 48;
+
+   // pearson's shuffle
+   x ^= x << 3;
+   x += x >> 5;
+   x ^= x << 2;
+   x += x >> 15;
+   x ^= x << 10;
+
+   x ^= x << 35;
+   x += x >> 37;
+   x ^= x << 34;
+   x += x >> 47;
+   x ^= x << 42;
+   return stb_rehash(x);
+#undef stb_rehash
+}
+
+uint64_t stb_rehashU64(uint64_t v)
+{
+   return stb_hash_ptrU64((void *)(size_t) v);
+}
+
+uint64_t stb_hash_dataU64(uint8_t const *q, size_t len)
+{
+// Paul Hsieh hash
+#define stb__get16(p) ((p)[0] | ((p)[1] << 8))
+   size_t hash = len;
+
+   if (len <= 0 || q == NULL) return 0;
+
+   /* Main loop */
+   for (;len > 3; len -= 4) {
+      unsigned int val;
+      hash +=  stb__get16(q);
+      val   = (stb__get16(q+2) << 11);
+      hash  = (hash << 16) ^ hash ^ val;
+      q    += 4;
+      hash += hash >> 11;
+   }
+
+   /* Handle end cases */
+   switch (len) {
+      case 3: hash += stb__get16(q);
+              hash ^= hash << 16;
+              hash ^= q[2] << 18;
+              hash += hash >> 11;
+              break;
+      case 2: hash += stb__get16(q);
+              hash ^= hash << 11;
+              hash += hash >> 17;
+              break;
+      case 1: hash += q[0];
+              hash ^= hash << 10;
+              hash += hash >> 1;
+              break;
+      case 0: break;
+   }
+#undef stb__get16
+
+   /* Force "avalanching" of final 127 bits */
+   hash ^= hash << 3;
+   hash += hash >> 5;
+   hash ^= hash << 4;
+   hash += hash >> 17;
+   hash ^= hash << 25;
+   hash += hash >> 6;
+
+   return hash;
+}
+
 
 #endif
 

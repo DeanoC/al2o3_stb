@@ -2,6 +2,7 @@
 #ifndef AL2O3_STB_STB_HASH_H
 #define AL2O3_STB_STB_HASH_H
 
+
 #define STB_EXTERN AL2O3_EXTERN_C
 
 //////////////////////////////////////////////////////////////////////////////
@@ -36,21 +37,11 @@ STB_EXTERN uint64_t stb_hash_ptrU64(void const *p);
 STB_EXTERN uint64_t stb_hash_dataU64(uint8_t const * data, size_t len);
 STB_EXTERN uint64_t stb_rehashU64(uint64_t v);
 
-STB_EXTERN inline size_t stb_hash_numberSizeT(size_t number) {
-	return stb_hash_numberU64(number);
-}
-STB_EXTERN inline size_t stb_hash_stringSizeT(char const *str) {
-	return stb_hash_stringU64(str);
-}
-STB_EXTERN inline size_t stb_hash_ptrSizeT(void const *p) {
-	return stb_hash_ptrU64(p);
-}
-STB_EXTERN inline size_t stb_hash_dataSizeT(uint8_t const * data, size_t len) {
-	return stb_hash_dataU64(data, len);
-}
-STB_EXTERN inline size_t stb_rehashSizeT(uint64_t v) {
-	return stb_rehashU64(v);
-}
+STB_EXTERN size_t stb_hash_numberSizeT(size_t number) ;
+STB_EXTERN size_t stb_hash_stringSizeT(char const *str);
+STB_EXTERN size_t stb_hash_ptrSizeT(void const *p);
+STB_EXTERN size_t stb_hash_dataSizeT(uint8_t const * data, size_t len);
+STB_EXTERN size_t stb_rehashSizeT(uint64_t v);
 
 
 #ifdef STB_DEFINE
@@ -251,7 +242,21 @@ uint64_t stb_hash_dataU64(uint8_t const *q, size_t len)
    return hash;
 }
 
-
+size_t stb_hash_numberSizeT(size_t number) {
+	return stb_hash_numberU64(number);
+}
+size_t stb_hash_stringSizeT(char const *str) {
+	return stb_hash_stringU64(str);
+}
+size_t stb_hash_ptrSizeT(void const *p) {
+	return stb_hash_ptrU64(p);
+}
+size_t stb_hash_dataSizeT(uint8_t const * data, size_t len) {
+	return stb_hash_dataU64(data, len);
+}
+size_t stb_rehashSizeT(uint64_t v) {
+	return stb_rehashU64(v);
+}
 #endif
 
 #endif //WYRD_STB_HASH_H

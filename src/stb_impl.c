@@ -3,16 +3,16 @@
 
 #define STB_EXTERN AL2O3_EXTERN_C
 
-#define STBI_MALLOC Memory_GlobalAllocator.malloc
-#define STBI_REALLOC Memory_GlobalAllocator.realloc
-#define STBI_FREE Memory_GlobalAllocator.free
-#define STBIR_MALLOC(x,u) ((void)(u),STBI_MALLOC(x))
-#define STBIR_FREE(x,u) ((void)(u),STBI_FREE(x))
-#define STBTT_malloc(x,u)  ((void)(u),STBI_MALLOC(x))
-#define STBTT_free(x,u)    ((void)(u),STBI_FREE(x))
-#define STBIW_MALLOC STBI_MALLOC
-#define STBIW_REALLOC STBI_REALLOC
-#define STBIW_FREE STBI_FREE
+#define STBI_MALLOC MEMORY_MALLOC
+#define STBI_REALLOC MEMORY_REALLOC
+#define STBI_FREE MEMORY_FREE
+#define STBIR_MALLOC(x,u) MEMORY_MALLOC(x)
+#define STBIR_FREE(x,u) MEMORY_FREE(x)
+#define STBTT_malloc(x,u)  MEMORY_MALLOC(x)
+#define STBTT_free(x,u)    MEMORY_FREE(x)
+#define STBIW_MALLOC MEMORY_MALLOC
+#define STBIW_REALLOC MEMORY_REALLOC
+#define STBIW_FREE MEMORY_FREE
 
 #define STBIW_ASSERT(x) { ASSERT(x); }
 #define STBI_ASSERT(x) { ASSERT(x); }
